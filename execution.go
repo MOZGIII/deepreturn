@@ -2,6 +2,8 @@ package deepreturn
 
 import (
 	"runtime"
+
+	"github.com/MOZGIII/deepreturn/internal/goroutinelock"
 )
 
 // Terminator provides means to terminate the execution.
@@ -18,12 +20,12 @@ var _ Terminator = TerminatorFn(nil)
 func (f TerminatorFn) Terminate(val interface{}) { f(val) }
 
 type terminator struct {
-	goroutineID goroutineID
-	valch       chan interface{}
+	goroutineLock goroutinelock.GoroutineLock
+	valch         chan interface{}
 }
 
 func (t *terminator) terminate(val interface{}) {
-	checkGoroutineID(t.goroutineID, true)
+	t.goroutineLock.Check()
 	t.valch <- val
 	runtime.Goexit()
 	*(*int)(nil) = 0 // not reached
@@ -33,8 +35,8 @@ func (t *terminator) terminate(val interface{}) {
 func Start(routine func(terminate TerminatorFn)) <-chan interface{} {
 	valch := make(chan interface{}, 1)
 	go func() {
-		gid := getGoroutineID()
-		ter := &terminator{gid, valch}
+		glock := goroutinelock.New()
+		ter := &terminator{glock, valch}
 		defer close(valch)
 		routine(TerminatorFn(ter.terminate))
 	}()
