@@ -5,13 +5,13 @@ package deepreturn
 import (
 	"fmt"
 
-	"github.com/huandu/goroutine"
+	"github.com/MOZGIII/deepreturn/internal/http2goroutineid"
 )
 
 type goroutineID int64
 
 func getGoroutineID() goroutineID {
-	return goroutineID(goroutine.GoroutineId())
+	return goroutineID(http2goroutineid.CurGoroutineID())
 }
 
 func checkGoroutineID(other goroutineID, expectMatch bool) {
