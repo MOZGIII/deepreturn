@@ -139,3 +139,14 @@ func Test_Empty(t *testing.T) {
 		t.Errorf("Expected val to be %v, but it was %v", nil, val)
 	}
 }
+
+func Test_TerminateFnCanBeUsedAsTerminator(t *testing.T) {
+	exp := "hello"
+	valch := Start(func(terminate TerminatorFn) {
+		terminate.Terminate(exp) // cause termination passing a value
+	})
+	val := <-valch
+	if val != exp {
+		t.Errorf("Expected val to be %v, but it was %v", exp, val)
+	}
+}
